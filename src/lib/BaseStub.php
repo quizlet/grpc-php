@@ -43,8 +43,10 @@ class BaseStub
     public function __construct($hostname, $opts, Channel $channel = null)
     {
         $ssl_roots = file_get_contents(
-            dirname(__FILE__).'/../../etc/roots.pem');
+            dirname(__FILE__).'/../../../../etc/roots.pem');
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_channelcreds_setdefaultrootspem');
         ChannelCredentials::setDefaultRootsPem($ssl_roots);
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_channelcreds_setdefaultrootspem');
 
         $this->hostname = $hostname;
         $this->update_metadata = null;
@@ -87,7 +89,10 @@ class BaseStub
      */
     public function getTarget()
     {
-        return $this->channel->getTarget();
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_channel_gettarget');
+        $target = $this->channel->getTarget();
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_channel_gettarget');
+        return $target;
     }
 
     /**
@@ -97,7 +102,10 @@ class BaseStub
      */
     public function getConnectivityState($try_to_connect = false)
     {
-        return $this->channel->getConnectivityState($try_to_connect);
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_channel_getconnectivitystate');
+        $connectivityState = $this->channel->getConnectivityState($try_to_connect);
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_channel_getconnectivitystate');
+        return $connectivityState;
     }
 
     /**
@@ -113,9 +121,11 @@ class BaseStub
             return true;
         }
 
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_timeval');
         $now = Timeval::now();
         $delta = new Timeval($timeout);
         $deadline = $now->add($delta);
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_timeval');
 
         while ($this->channel->watchConnectivityState($new_state, $deadline)) {
             // state has changed before deadline
@@ -135,7 +145,9 @@ class BaseStub
      */
     public function close()
     {
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_channel_close');
         $this->channel->close();
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_channel_close');
     }
 
     /**

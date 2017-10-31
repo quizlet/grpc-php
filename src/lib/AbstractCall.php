@@ -51,13 +51,21 @@ abstract class AbstractCall
         if (array_key_exists('timeout', $options) &&
             is_numeric($timeout = $options['timeout'])
         ) {
+            \QMetric::startNonoverlappingBenchmark('app_time_grpc_timeval');
             $now = Timeval::now();
             $delta = new Timeval($timeout);
             $deadline = $now->add($delta);
+            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_timeval');
         } else {
+            \QMetric::startNonoverlappingBenchmark('app_time_grpc_timeval');
             $deadline = Timeval::infFuture();
+            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_timeval');
         }
+
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_construct');
         $this->call = new Call($channel, $method, $deadline);
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_construct');
+
         $this->deserialize = $deserialize;
         $this->metadata = null;
         $this->trailing_metadata = null;
@@ -65,10 +73,15 @@ abstract class AbstractCall
             is_callable($call_credentials_callback =
                 $options['call_credentials_callback'])
         ) {
+            \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_creds_createfromplugin');
             $call_credentials = CallCredentials::createFromPlugin(
                 $call_credentials_callback
             );
+            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_creds_createfromplugin')
+
+            \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_setcredentials');
             $this->call->setCredentials($call_credentials);
+            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_setcredentials');
         }
     }
 
@@ -93,7 +106,10 @@ abstract class AbstractCall
      */
     public function getPeer()
     {
-        return $this->call->getPeer();
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_getpeer');
+        $peer = $this->call->getPeer();
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_getpeer');
+        return $peer;
     }
 
     /**
@@ -101,7 +117,9 @@ abstract class AbstractCall
      */
     public function cancel()
     {
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_cancel');
         $this->call->cancel();
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_cancel');
     }
 
     /**
@@ -161,6 +179,8 @@ abstract class AbstractCall
      */
     public function setCallCredentials($call_credentials)
     {
+        \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_setcredentials');
         $this->call->setCredentials($call_credentials);
+        \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_setcredentials');
     }
 }
