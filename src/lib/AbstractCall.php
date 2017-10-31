@@ -77,7 +77,7 @@ abstract class AbstractCall
             $call_credentials = CallCredentials::createFromPlugin(
                 $call_credentials_callback
             );
-            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_creds_createfromplugin')
+            \QMetric::profileNonoverlapping('spanner.app_time.grpc', 'app_time_grpc_call_creds_createfromplugin');
 
             \QMetric::startNonoverlappingBenchmark('app_time_grpc_call_setcredentials');
             $this->call->setCredentials($call_credentials);
