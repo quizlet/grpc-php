@@ -40,11 +40,13 @@ class UnaryCall extends AbstractCall
         if (isset($options['flags'])) {
             $message_array['flags'] = $options['flags'];
         }
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
         $this->call->startBatch([
             OP_SEND_INITIAL_METADATA => $metadata,
             OP_SEND_MESSAGE => $message_array,
             OP_SEND_CLOSE_FROM_CLIENT => true,
         ]);
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
     }
 
     /**
@@ -61,7 +63,9 @@ class UnaryCall extends AbstractCall
         if ($this->metadata === null) {
             $batch[OP_RECV_INITIAL_METADATA] = true;
         }
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
         $event = $this->call->startBatch($batch);
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
         if ($this->metadata === null) {
             $this->metadata = $event->metadata;
         }
@@ -77,7 +81,9 @@ class UnaryCall extends AbstractCall
     public function getMetadata()
     {
         if ($this->metadata === null) {
+            \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
             $event = $this->call->startBatch([OP_RECV_INITIAL_METADATA => true]);
+            \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
             $this->metadata = $event->metadata;
         }
         return $this->metadata;

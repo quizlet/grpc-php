@@ -44,7 +44,9 @@ class BaseStub
     {
         $ssl_roots = file_get_contents(
             dirname(__FILE__).'/../../etc/roots.pem');
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
         ChannelCredentials::setDefaultRootsPem($ssl_roots);
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
 
         $this->hostname = $hostname;
         $this->update_metadata = null;
@@ -87,7 +89,10 @@ class BaseStub
      */
     public function getTarget()
     {
-        return $this->channel->getTarget();
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
+        $target = $this->channel->getTarget();
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
+        return $target;
     }
 
     /**
@@ -97,7 +102,10 @@ class BaseStub
      */
     public function getConnectivityState($try_to_connect = false)
     {
-        return $this->channel->getConnectivityState($try_to_connect);
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
+        $connectivityState = $this->channel->getConnectivityState($try_to_connect);
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
+        return $connectivityState;
     }
 
     /**
@@ -113,9 +121,11 @@ class BaseStub
             return true;
         }
 
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
         $now = Timeval::now();
         $delta = new Timeval($timeout);
         $deadline = $now->add($delta);
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
 
         while ($this->channel->watchConnectivityState($new_state, $deadline)) {
             // state has changed before deadline
@@ -135,7 +145,9 @@ class BaseStub
      */
     public function close()
     {
+        \QMetric::startNonoverlappingBenchmark('spanner.app_time.grpc');
         $this->channel->close();
+        \QMetric::endNonoverlappingBenchmark('spanner.app_time.grpc');
     }
 
     /**
